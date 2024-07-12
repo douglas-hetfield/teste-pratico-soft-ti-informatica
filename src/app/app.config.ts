@@ -1,9 +1,11 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideEnvironmentNgxMask } from 'ngx-mask';
 import { provideHttpClient } from '@angular/common/http';
+import { NgxIndexedDBModule } from 'ngx-indexed-db';
+import { dbConfig } from './migration';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -11,5 +13,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideEnvironmentNgxMask(),
     provideHttpClient(),
+    importProvidersFrom(NgxIndexedDBModule.forRoot(dbConfig))
   ],
 };
