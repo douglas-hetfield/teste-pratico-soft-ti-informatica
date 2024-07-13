@@ -1,10 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, TemplateRef } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgbPaginationModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbPaginationModule, NgbPopoverModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 import { RouterModule } from '@angular/router';
 import { IndexedDbService } from '@services/indexed-db.service';
 import { Customer } from 'app/_interfaces/customer';
+import Swal from 'sweetalert2';
+import { TypePerson } from 'app/_enums/type-person';
+import { NgxMaskPipe } from 'ngx-mask';
 
 @Component({
 	selector: 'app-customer-list',
@@ -15,27 +18,30 @@ import { Customer } from 'app/_interfaces/customer';
 		NgbTypeaheadModule,
 		NgbPaginationModule,
 		RouterModule,
-		CommonModule
+		CommonModule,
+		NgbPopoverModule,
+		NgxMaskPipe
 	],
 	templateUrl: './customer-list.component.html',
 	styleUrl: './customer-list.component.css'
 })
 export class CustomerListComponent {
-	page = 1;
-	pageSize = 10;
+	page: number = 1;
+	pageSize: number = 10;
 	customersLength: number = 0;
-	customers: any;
+	customers: Customer[] | any;
+	selectedCustomer: Customer | any;
 
 	constructor(
-		private indexedDbService: IndexedDbService
+		private indexedDbService: IndexedDbService,
+		private modalService: NgbModal
 	) {
 		this.getAllCustomers();
 	}
 
-	getAllCustomers() {
+	getAllCustomers(): void {
 		this.indexedDbService.get().subscribe({
-			next: (data) => {
-				console.warn("Customers", data)
+			next: (data: Customer[] | any) => {
 				this.customers = data;
 				this.customersLength = this.customers.length;
 
@@ -44,14 +50,54 @@ export class CustomerListComponent {
 					(this.page - 1) * this.pageSize + this.pageSize,
 				);
 			},
-			error: (error) => {
-				console.warn("Erro ao buscar clientes!", error)
+			error: () => {
+				Swal.fire({
+					title: "Erro Interno",
+					text: "Erro ao tentar buscar clientes :(",
+					icon: "error"
+				});
 			}
 		})
-		
-		/*this.countries = COUNTRIES.map((country, i) => ({ id: i + 1, ...country })).slice(
-			(this.page - 1) * this.pageSize,
-			(this.page - 1) * this.pageSize + this.pageSize,
-		);*/
+	}
+
+	deleteCustomer(customer: Customer): void{
+		this.askToContinueDeleteCustomer().then((response: {isConfirmed:boolean}) => {
+			if(!customer.id || !response.isConfirmed) return ;
+			
+			this.indexedDbService.delete(customer.id).then(() => {
+				this.customers = this.customers.filter((data: Customer) => data.id != customer.id);
+			}).catch(() => {
+				Swal.fire({
+					title: "Erro Interno",
+					text: "Erro ao tentar excluir cliente!",
+					icon: "error"
+				});
+			})
+		})
+	}
+
+	openModalInformation(content: TemplateRef<any>, customer: Customer): void{
+		this.selectedCustomer = customer;
+		this.modalService.open(content, { centered: true });
+	}
+
+	askToContinueDeleteCustomer(): Promise<{isConfirmed:boolean}>{
+		return new Promise((resolve) => {
+			Swal.fire({
+				title: "Atenção",
+				text: "Tem certeza que deseja EXCLUIR este cliente?",
+				icon: "warning",
+				showCancelButton: true,
+				confirmButtonColor: "#dc3545",
+				cancelButtonText: "Cancelar",
+				confirmButtonText: "EXCLUIR"
+			}).then((result) => {
+				return resolve(result)
+			});
+		})
+	}
+
+	getTypePersonEnum(): typeof TypePerson {
+		return TypePerson;
 	}
 }

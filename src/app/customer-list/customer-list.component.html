@@ -1,34 +1,85 @@
+<ng-template #content let-modal>
+	<div class="modal-header">
+		<h4 class="modal-title">Informações do cliente</h4>
+		<button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+	</div>
+	<div class="modal-body">
+        <div class="mb-5">
+            <h5 class="mb-3">Dados pessoais</h5>
+            <p class="lh-1"><b>Tipo cliente:</b> {{ selectedCustomer.typePerson }}</p>
+            <div *ngIf="selectedCustomer.typePerson === getTypePersonEnum().Fisica">
+                <p class="lh-1"><b>CPF:</b> {{ selectedCustomer.cpf_cnpj | mask:"000.000.000-00" }}</p>
+                <p class="lh-1"><b>Nome:</b> {{ selectedCustomer.name }}</p>
+            </div>
+            
+            <div *ngIf="selectedCustomer.typePerson === getTypePersonEnum().Juridica">
+                <p class="lh-1"><b>CNPJ:</b> {{ selectedCustomer.cpf_cnpj | mask:"00.000.000/0000-00" }}</p>
+                <p class="lh-1"><b>Nome Fantasia:</b> {{ selectedCustomer.name }}</p>
+            </div>
+
+            <p class="lh-1"><b>Email:</b> {{ selectedCustomer.email }}</p>
+            <p class="lh-1"><b>Telefone:</b> {{ selectedCustomer.phone | mask:"(00) 00000-0000" }}</p>
+        </div>
+        
+        <div>
+            <h5 class="mb-3">Localidade</h5>
+            <p class="lh-1"><b>CEP:</b> {{ selectedCustomer.address.cep | mask: '00000-000' }}</p>
+            <p class="lh-1"><b>Endereço:</b> {{ selectedCustomer.address.logradouro }}</p>
+            <p class="lh-1"><b>Bairro:</b> {{ selectedCustomer.address.bairro }}</p>
+            <p class="lh-1"><b>Cidade:</b> {{ selectedCustomer.address.localidade }}</p>
+        </div>
+	</div>
+</ng-template>
+
 <div class="container mt-5">
     <div class="">
         <div class="mb-4 d-flex justify-content-between">
-            <h2>Clientes</h2>
+            <h2>Lista de clientes</h2>
             <a routerLink="/addCustomer"  class="btn btn-primary">+ Adicionar</a>
         </div>
 
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th scope="col">Código</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Endereço</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let customer of customers">
-                    <th scope="row">{{ customer.id }}</th>
-                    <td>{{ customer.name }}</td>
-                    <td>{{ customer.address.logradouro }}, {{ customer.address.bairro }} - {{ customer.address.localidade }}</td>
-                    <td>{{ customer.email }}</td>
-                    <td>
-                        
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        
-        <div class="d-flex justify-content-between p-2">
+        <div *ngIf="customers?.length > 0" class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col">Código</th>
+                        <th scope="col">Tipo cliente</th>
+                        <th scope="col">Nome / Nome Fantasia</th>
+                        <th scope="col">Endereço</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    <tr *ngFor="let customer of customers">
+                        <th scope="row">{{ customer.id }}</th>
+                        <td>
+                            {{ customer.typePerson === getTypePersonEnum().Fisica ? 'PF' : 'PJ' }}
+                        </td>
+                        <td>{{ customer.name }}</td>
+                        <td>{{ customer.address.logradouro }}, {{ customer.address.bairro }} - {{ customer.address.localidade }}</td>
+                        <td>{{ customer.email }}</td>
+                        <td class="fs-5">
+                            <div class="d-flex justify-content-around">
+                                <i class="bi bi-trash-fill text-danger cursor-pointer"
+                                    [ngbPopover]="'Excluir cliente: ' + customer.name "
+                                    triggers="mouseenter:mouseleave"
+                                    (click)="deleteCustomer(customer)"
+                                ></i>
+    
+                                <i class="bi bi-info-square-fill text-primary cursor-pointer"
+                                    [ngbPopover]="'Ver mais sobre: ' + customer.name "
+                                    triggers="mouseenter:mouseleave"
+                                    (click)="openModalInformation(content, customer)"
+                                ></i>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div *ngIf="customers?.length > 0" class="d-flex justify-content-between p-2">
             <ngb-pagination
                 [collectionSize]="customersLength"
                 [(page)]="page"
@@ -42,6 +93,11 @@
                 <option [ngValue]="10">10 items por página</option>
                 <option [ngValue]="15">15 items por página</option>
             </select>
+        </div>
+
+        <div *ngIf="customers?.length <= 0" class="d-flex justify-content-center align-items-center flex-column" id="customers-not-found">
+            <i id="customers-not-found-icone" class="bi bi-info-circle"></i>
+            <span class="fw-bold">Nenhum cliente encontrado!</span>
         </div>
     </div>
 </div>

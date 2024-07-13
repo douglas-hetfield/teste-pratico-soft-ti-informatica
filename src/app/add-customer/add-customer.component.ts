@@ -3,15 +3,17 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'; 
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import Swal from 'sweetalert2';
+import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
 
-import { NgxMaskDirective } from 'ngx-mask';
+import Swal from 'sweetalert2';
 
 import { TypePerson } from 'app/_enums/type-person';
 import { CustomerService } from '@services/customer.service';
 import { Address } from 'app/_interfaces/address';
 import { IndexedDbService } from '@services/indexed-db.service';
 import { Customer } from 'app/_interfaces/customer';
+import { cpfValidator } from 'app/_utils/cpfValidator';
+import { cnpjValidator } from 'app/_utils/cnpjValidator';
 
 @Component({
   selector: 'app-add-customer',
@@ -20,7 +22,8 @@ import { Customer } from 'app/_interfaces/customer';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    NgxMaskDirective
+    NgxMaskDirective,
+    NgxMaskPipe
   ],
   templateUrl: './add-customer.component.html',
   styleUrl: './add-customer.component.css'
@@ -31,6 +34,7 @@ export class AddCustomerComponent {
   typePerson: TypePerson = TypePerson.Fisica;
 
   @ViewChild('phone', { static: false }) phoneInput!: ElementRef;
+  @ViewChild('zipcode', { static: false }) zipcodeInput!: ElementRef;
 
   constructor(
     private customerService: CustomerService,
@@ -43,44 +47,51 @@ export class AddCustomerComponent {
       cnpj: new FormControl('', [
         Validators.required,
         Validators.minLength(14),
+        Validators.maxLength(14),
+        cnpjValidator()
       ]),
       fantasyName: new FormControl('', [
         Validators.required,
-        Validators.minLength(4),
+        Validators.minLength(3),
+        Validators.maxLength(100),
+        Validators.pattern(/^[a-zA-Z0-9À-ÖØ-öø-ÿ\s&-]+$/)
       ]),
-      
       cpf: new FormControl('', [
         Validators.required,
-        Validators.minLength(4),
+        Validators.minLength(11),
+        Validators.maxLength(11),
+        cpfValidator()
       ]),
       name: new FormControl('', [
         Validators.required,
-        Validators.minLength(4),
+        Validators.minLength(3),
+        Validators.maxLength(50),
+        Validators.pattern(/^[a-zA-ZÀ-ÖØ-öø-ÿ\s]+$/)
       ]),
 
       zipcode: new FormControl('', [
         Validators.required,
-        Validators.minLength(4),
+        Validators.minLength(8),
+        Validators.maxLength(8),
       ]),
       address: new FormControl('', [
         Validators.required,
-        Validators.minLength(4),
       ]),
       neighborhood: new FormControl('', [
         Validators.required,
-        Validators.minLength(4),
       ]),
       city: new FormControl('', [
         Validators.required,
-        Validators.minLength(4),
       ]),
       phone: new FormControl('', [
         Validators.required,
-        Validators.minLength(4),
+        Validators.minLength(11),
+        Validators.maxLength(11)
       ]),
       email: new FormControl('', [
         Validators.required,
-        Validators.minLength(4),
+        Validators.maxLength(50),
+        Validators.email
       ]),
     });
   }
@@ -89,14 +100,27 @@ export class AddCustomerComponent {
     this.typePerson = (event.target as HTMLSelectElement).value as TypePerson;
   }
 
-  async onZipcodeChange(){
+  async onZipcodeChange(): Promise<void>{
     const zipcode = this.customerForm.get('zipcode')?.value;
     if(zipcode.length < 8){
-      //exibir "CEP inválido" no campo
+      return;
     }
-    
-    this.customerService.getAddressByZipcode(zipcode).then((data: Address) => {
-      console.warn("data", data)
+    this.customerService.getAddressByZipcode(zipcode).then((data: Address | any) => {
+      if(data.erro){
+        Swal.fire({
+          title: "Erro ao buscar endereço",
+          text: "Digite um CEP válido!",
+          icon: "error"
+        }).finally(() => {
+          this.customerForm.patchValue({
+            zipcode: ''
+          });
+          this.zipcodeInput.nativeElement.focus();
+        });
+
+        return;
+      }
+
       this.customerForm.patchValue({
         address: data.logradouro,
         neighborhood: data.bairro,
@@ -104,44 +128,45 @@ export class AddCustomerComponent {
         phone: data.ddd + ")"
       });
 
-      this.disableAddressFields();
+      this.disableFields(['address', 'neighborhood', 'city'])
       this.phoneInput.nativeElement.focus();
     });
   }
 
-  disableAddressFields(){
-    this.customerForm.get('address')?.disable();
-    this.customerForm.get('neighborhood')?.disable();
-    this.customerForm.get('city')?.disable();
+  disableFields(fields: string[]): void {
+    fields.forEach(field => this.customerForm.get(field)?.disable());
   }
 
-  enableAddressFields(){
-    this.customerForm.get('address')?.enable();
-    this.customerForm.get('neighborhood')?.enable();
-    this.customerForm.get('city')?.enable();
+  enableFields(fields: string[]): void {
+    fields.forEach(field => this.customerForm.get(field)?.enable());
   }
 
   getTypePersonEnum(): typeof TypePerson {
     return TypePerson;
   }
 
-  saveCustomer(){
-    this.enableAddressFields();
-
-    if(!this.customerForm.valid){
-      this.customerForm.markAllAsTouched();
+  saveCustomer(): void{
+    //check the type of person and disable fields that will not be necessary for validation
+    if(this.typePerson === TypePerson.Fisica){
+      this.disableFields(['fantasyName', 'cnpj']);
+    }else{
+      this.disableFields(['name', 'cpf']);
     }
-    console.warn("form", this.customerForm)
+    
+    if (!this.customerForm.valid){
+      this.customerForm.markAllAsTouched()
+      Swal.fire({
+        title: "Atenção",
+        confirmButtonColor: "#0d6efd",
+        text: "Por favor, corrija os erros do formulário antes de enviar!",
+        icon: "error"
+      });
 
-    return 
-
-    /*
-      1) preciso validar se todas as informações estão presentes
-        - exibir erro se não estiver presente.
-
-      2) Verificar se phone, email, cpf e cnpj não existem no indexDB ou tentar pegar o erro ao tentar salvar.
-        - exibir erro no campo igual
-    */
+      this.enableFields(['name', 'cpf', 'fantasyName', 'cnpj']);
+      return;
+    }
+    
+    this.enableFields(['address', 'neighborhood', 'city', 'name', 'cpf', 'fantasyName', 'cnpj'])
     
     const dataForm = this.customerForm.value;
     
@@ -159,29 +184,72 @@ export class AddCustomerComponent {
       }
     }
 
-    this.askToContinueSaveCustomer().then((response:any) => {
+    this.askToContinueSaveCustomer().then((response: {isConfirmed:boolean}) => {
       if (response.isConfirmed) {
-        this.indexedDbService.addCustomer(data);
-        
-        Swal.fire({
-          title: "Perfeito!",
-          text: "Cliente salvo com sucesso!.",
-          icon: "success"
-        });
+        this.indexedDbService.addCustomer(data).then((response: boolean | object) => {
+          if(response){
+            Swal.fire({
+              title: "Perfeito!",
+              text: "Cliente salvo com sucesso!.",
+              icon: "success"
+            });
+    
+            this.router.navigate(['/']);
+          }else{
+            Swal.fire({
+              title: "Erro",
+              text: "Erro ao tentar salvar cliente :(",
+              icon: "error"
+            });
+          }
+        }).catch((error: { field:string, fieldIsRequired:boolean }) => {
+          console.error("erro mensage: ", error)
 
-        this.router.navigate(['/']);
+          let erroMessage = 'Erro ao tentar salvar cliente na base de dados.';
+          if(error.field){
+            erroMessage = this.getErrorMessage(error.field);
+          }
+
+          Swal.fire({
+            title: "Erro",
+            text: erroMessage,
+            icon: "error"
+          });
+        })
+        
       }
     })
   }
 
-  askToContinueSaveCustomer(){
+  getErrorMessage(field:string) : string{
+    switch(field){
+      case 'cpf_cnpj':
+        if(this.typePerson === TypePerson.Fisica){
+          return 'Este CPF já está salvo na base de dados!'
+        }else{
+          return 'Este CNPJ já está salvo na base de dados!'
+        }
+        
+      case 'email':
+        return 'Este email já foi salvo na base de dados!'
+        
+      case 'phone':
+        return 'Este telefone já foi salvo na base de dados!'
+
+      default:
+        return 'Erro ao tentar salvar cliente na base de dados.'
+    }
+  }
+
+  askToContinueSaveCustomer(): Promise<{isConfirmed:boolean}>{
     return new Promise((resolve) => {
       Swal.fire({
         title: "Atenção",
         text: "Tem certeza que deseja salvar este cliente?",
         icon: "warning",
+        reverseButtons: true,
         showCancelButton: true,
-        confirmButtonColor: "#3085d6",
+        confirmButtonColor: "#198754",
         cancelButtonColor: "#d33",
         confirmButtonText: "Salvar",
         cancelButtonText: "Cancelar"

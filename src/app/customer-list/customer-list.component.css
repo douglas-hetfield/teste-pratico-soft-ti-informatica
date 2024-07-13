@@ -1,0 +1,11 @@
+#customers-not-found{
+    height: 60vh;
+}
+
+#customers-not-found-icone{
+    font-size: 70px;
+}
+
+.cursor-pointer{
+    cursor: pointer;
+}
