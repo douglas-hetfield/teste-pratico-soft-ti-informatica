@@ -78,12 +78,15 @@ export class AddCustomerComponent {
         Validators.maxLength(8),
       ]),
       address: new FormControl('', [
+        Validators.maxLength(100),
         Validators.required,
       ]),
       neighborhood: new FormControl('', [
+        Validators.maxLength(100),
         Validators.required,
       ]),
       city: new FormControl('', [
+        Validators.maxLength(100),
         Validators.required,
       ]),
       phone: new FormControl('', [
