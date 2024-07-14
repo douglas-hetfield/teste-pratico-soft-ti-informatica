@@ -18,7 +18,16 @@
                         {{ customer.typePerson === getTypePersonEnum().Fisica ? 'PF' : 'PJ' }}
                     </td>
                     <td>{{ customer.name }}</td>
-                    <td>{{ customer.address.logradouro }}, {{ customer.address.bairro }} - {{ customer.address.localidade }}</td>
+                    <td *ngIf="customer.address.logradouro || customer.address.bairro || customer.address.localidade; else no_has_address">
+                        {{ customer.address.logradouro }}{{ customer.address.logradouro && customer.address.bairro || customer.address.logradouro && customer.address.localidade ? ',' : ''}} 
+                        {{ customer.address.bairro }}
+                        {{ customer.address.bairro && customer.address.localidade && '-' }}
+                        {{ customer.address.localidade }}
+                    </td>
+                    <ng-template #no_has_address>
+                        <td class="text-danger">Endereço não informado!</td>
+                    </ng-template>
+
                     <td>{{ customer.email }}</td>
                     <td class="fs-5">
                         <div class="d-flex justify-content-around">

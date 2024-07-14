@@ -18,14 +18,29 @@
         </div>
 
         <p class="lh-1"><b>Email:</b> {{ selectedCustomer.email }}</p>
-        <p class="lh-1"><b>Telefone:</b> {{ selectedCustomer.phone | mask:"(00) 00000-0000" }}</p>
+        <p class="lh-1"><b>Telefone:</b>
+            <span *ngIf="selectedCustomer.phone">{{ selectedCustomer.phone | mask:"(00) 00000-0000" }}</span>
+            <span class="text-danger" *ngIf="!selectedCustomer.phone"> Não informado</span>
+        </p>
     </div>
     
     <div>
         <h5 class="mb-3">Localidade</h5>
-        <p class="lh-1"><b>CEP:</b> {{ selectedCustomer.address.cep | mask:"00000-000" }}</p>
-        <p class="lh-1"><b>Endereço:</b> {{ selectedCustomer.address.logradouro }}</p>
-        <p class="lh-1"><b>Bairro:</b> {{ selectedCustomer.address.bairro }}</p>
-        <p class="lh-1"><b>Cidade:</b> {{ selectedCustomer.address.localidade }}</p>
+        <p class="lh-1"><b>CEP:</b>
+            <span *ngIf="selectedCustomer.address.cep">{{ selectedCustomer.address.cep | mask:"00000-000" }}</span>
+            <span class="text-danger" *ngIf="!selectedCustomer.phone"> Não informado</span>
+        </p>
+        <p class="lh-1"><b>Endereço:</b>
+            <span *ngIf="selectedCustomer.address.logradouro">{{ selectedCustomer.address.logradouro }}</span>
+            <span class="text-danger" *ngIf="!selectedCustomer.address.logradouro"> Não informado</span>
+        </p>
+        <p class="lh-1"><b>Bairro:</b>
+            <span *ngIf="selectedCustomer.address.bairro">{{ selectedCustomer.address.bairro }}</span>
+            <span class="text-danger" *ngIf="!selectedCustomer.address.bairro"> Não informado</span>
+        </p>
+        <p class="lh-1"><b>Cidade:</b>
+            <span *ngIf="selectedCustomer.address.localidade">{{ selectedCustomer.address.localidade }}</span>
+            <span class="text-danger" *ngIf="!selectedCustomer.address.localidade"> Não informado</span>
+        </p>
     </div>
 </div>

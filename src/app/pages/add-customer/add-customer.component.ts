@@ -71,33 +71,27 @@ export class AddCustomerComponent {
         Validators.maxLength(50),
         Validators.pattern(/^[a-zA-ZÀ-ÖØ-öø-ÿ\s]+$/)
       ]),
-
-      zipcode: new FormControl('', [
+      email: new FormControl('', [
         Validators.required,
+        Validators.maxLength(50),
+        Validators.email
+      ]),
+      zipcode: new FormControl('', [
         Validators.minLength(8),
         Validators.maxLength(8),
       ]),
       address: new FormControl('', [
         Validators.maxLength(100),
-        Validators.required,
       ]),
       neighborhood: new FormControl('', [
         Validators.maxLength(100),
-        Validators.required,
       ]),
       city: new FormControl('', [
         Validators.maxLength(100),
-        Validators.required,
       ]),
       phone: new FormControl('', [
-        Validators.required,
         Validators.minLength(11),
         Validators.maxLength(11)
-      ]),
-      email: new FormControl('', [
-        Validators.required,
-        Validators.maxLength(50),
-        Validators.email
       ]),
     });
   }

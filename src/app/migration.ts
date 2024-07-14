@@ -12,7 +12,7 @@ export const dbConfig: DBConfig  = {
             { name: 'name', keypath: 'name', options: { unique: false } },
             { name: 'email', keypath: 'email', options: { unique: true } },
             { name: 'address', keypath: 'address', options: { unique: false } },
-            { name: 'phone', keypath: 'phone', options: { unique: true } },
+            { name: 'phone', keypath: 'phone', options: { unique: false } },
         ]
     }]
 };
