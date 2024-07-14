@@ -1,0 +1,31 @@
+
+<div class="modal-header">
+    <h4 class="modal-title">Informações do cliente</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss('Cross click')"></button>
+</div>
+<div class="modal-body">
+    <div class="mb-5">
+        <h5 class="mb-3">Dados pessoais</h5>
+        <p class="lh-1"><b>Tipo cliente:</b> {{ selectedCustomer.typePerson }}</p>
+        <div *ngIf="selectedCustomer.typePerson === getTypePersonEnum().Fisica">
+            <p class="lh-1"><b>CPF:</b> {{ selectedCustomer.cpf_cnpj | mask:"000.000.000-00" }}</p>
+            <p class="lh-1"><b>Nome:</b> {{ selectedCustomer.name }}</p>
+        </div>
+        
+        <div *ngIf="selectedCustomer.typePerson === getTypePersonEnum().Juridica">
+            <p class="lh-1"><b>CNPJ:</b> {{ selectedCustomer.cpf_cnpj | mask:"00.000.000/0000-00" }}</p>
+            <p class="lh-1"><b>Nome Fantasia:</b> {{ selectedCustomer.name }}</p>
+        </div>
+
+        <p class="lh-1"><b>Email:</b> {{ selectedCustomer.email }}</p>
+        <p class="lh-1"><b>Telefone:</b> {{ selectedCustomer.phone | mask:"(00) 00000-0000" }}</p>
+    </div>
+    
+    <div>
+        <h5 class="mb-3">Localidade</h5>
+        <p class="lh-1"><b>CEP:</b> {{ selectedCustomer.address.cep | mask:"00000-000" }}</p>
+        <p class="lh-1"><b>Endereço:</b> {{ selectedCustomer.address.logradouro }}</p>
+        <p class="lh-1"><b>Bairro:</b> {{ selectedCustomer.address.bairro }}</p>
+        <p class="lh-1"><b>Cidade:</b> {{ selectedCustomer.address.localidade }}</p>
+    </div>
+</div>

@@ -1,0 +1,36 @@
+<div class="form-group mb-4" [formGroup]="form">
+    <label [for]="fieldName">{{ label ? label : fieldName }}</label>
+    <input 
+        type="text" 
+        [id]="fieldName" 
+        [name]="fieldName" 
+        class="form-control" 
+        [formControlName]="fieldName"
+        [mask]="mask"
+        [placeholder]="placeholder"
+        (blur)="onBlur.emit()"
+        #inputRef
+    />
+
+    <p class="text-danger" *ngIf="form.get(fieldName)?.errors?.['required'] && (form.get(fieldName)?.dirty || form.get(fieldName)?.touched)">
+        O campo {{ label ? label : fieldName }} é requerido.
+    </p>
+    <p class="text-danger" *ngIf="form.get(fieldName)?.errors?.['minlength'] && (form.get(fieldName)?.dirty || form.get(fieldName)?.touched)">
+        O campo {{ label ? label : fieldName }} deve possuir no mínimo {{ form.get(fieldName)?.errors?.['minlength'].requiredLength }} {{ typeData }}.
+    </p>
+    <p class="text-danger" *ngIf="form.get(fieldName)?.errors?.['maxlength'] && (form.get(fieldName)?.dirty || form.get(fieldName)?.touched)">
+        O campo {{ label ? label : fieldName }} deve possuir no máximo {{ form.get(fieldName)?.errors?.['maxlength'].requiredLength }} {{ typeData }}.
+    </p>
+    <p class="text-danger" *ngIf="form.get(fieldName)?.errors?.['invalidCPF'] && form.get(fieldName)?.value.length == 11">
+        {{ label ? label : fieldName }} inválido.
+    </p>
+    <p class="text-danger" *ngIf="form.get(fieldName)?.errors?.['invalidCNPJ'] && form.get(fieldName)?.value.length == 14">
+        {{ label ? label : fieldName }} inválido.
+    </p>
+    <p class="text-danger" *ngIf="form.get(fieldName)?.errors?.['pattern']">
+        {{ erroMessagePattern }}
+    </p>
+    <p class="text-danger" *ngIf="form.get(fieldName)?.errors?.['email'] && (form.get(fieldName)?.dirty || form.get(fieldName)?.touched)">
+        Insira um Email válido, por exemplo: seu.email&#64;gmail.com
+    </p>
+</div>

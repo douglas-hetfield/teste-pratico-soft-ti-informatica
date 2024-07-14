@@ -1,0 +1,14 @@
+<div class="container mt-5 mb-5">
+    <div class="mb-4 d-flex justify-content-between">
+        <h2>Lista de clientes</h2>
+        <a routerLink="/addCustomer"  class="btn btn-primary">+ Adicionar</a>
+    </div>
+
+    <app-customers-table 
+        [customers]="customers"
+        [customersLength]="customersLength"
+        (deleteCustomer)="deleteCustomer($event)"
+        (getAllCustomers)="getAllCustomers()"
+        (changePageSize)="changePageSize($event)"
+        (changePage)="changePage($event)" />
+</div>

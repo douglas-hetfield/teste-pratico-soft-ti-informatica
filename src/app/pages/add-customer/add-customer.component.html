@@ -1,0 +1,111 @@
+<div class="container mt-4 mb-5">
+    <div class="d-flex align-items-center">
+        <a routerLink="/" class="text-decoration-none btn btn-link ps-0">Lista de clientes</a>
+        >&nbsp; Adicionar cliente
+    </div>
+
+    <div class="mb-5 mt-3">
+        <h2>Adicionar cliente</h2>
+        <p>Digite todas as informações do cliente para salvar na base de dados.</p>
+    </div>
+
+    <form [formGroup]="customerForm" (submit)="saveCustomer()" >
+        <div class="form-group mb-4">
+            <label for="type">Tipo</label>
+            <select name="type" id="type" (change)="onTypePersonChange($event)" class="form-control" required>
+                <option *ngFor="let type of optionsTypePerson" [value]="type">{{ type }}</option>
+            </select>
+        </div>
+        
+        <app-generic-input
+            label="CPF"
+            fieldName="cpf"
+            placeholder="000.000.000-00"
+            mask="000.000.000-00"
+            typeData="números"
+            [form]="customerForm"
+            *ngIf="typePerson === getTypePersonEnum().Fisica"
+        />
+        
+        <app-generic-input 
+            label="CNPJ"
+            fieldName="cnpj"
+            typeData="números"
+            placeholder="00.000.000/0000-00"
+            mask="00.000.000/0000-00"
+            [form]="customerForm"
+            *ngIf="typePerson === getTypePersonEnum().Juridica"
+        />
+        
+        <app-generic-input 
+            label="Nome" 
+            fieldName="name" 
+            placeholder="Digite o nome do cliente"
+            [form]="customerForm"
+            erroMessagePattern="O campo Nome deve conter somente letras e espaços."
+            *ngIf="typePerson === getTypePersonEnum().Fisica"
+        />
+
+        <app-generic-input 
+            label="Nome Fantasia" 
+            fieldName="fantasyName" 
+            placeholder="Digite o nome fantasia da empresa"
+            [form]="customerForm"
+            erroMessagePattern="O campo Nome Fantasia deve conter somente letras, números, espaços, `-` e `&`."
+            *ngIf="typePerson === getTypePersonEnum().Juridica"
+        />
+
+        <app-generic-input
+            label="Email"
+            fieldName="email"
+            placeholder="exemplo@email.com"
+            [form]="customerForm"
+        />
+
+        <app-generic-input
+            #zipcode
+            label="CEP"
+            fieldName="zipcode"
+            typeData="números"
+            placeholder="00000-000"
+            mask="00000-000"
+            [form]="customerForm"
+            (onBlur)="onZipcodeChange()"
+        />
+
+        <app-generic-input
+            #phone
+            label="Telefone"
+            fieldName="phone"
+            typeData="números"
+            placeholder="(00) 00000-0000"
+            mask="(00) 00000-0000"
+            [form]="customerForm"
+        />
+
+        <app-generic-input
+            label="Endereço"
+            fieldName="address"
+            placeholder="Preenchimento automatico através do CEP"
+            [form]="customerForm"
+        />
+
+        <app-generic-input
+            label="Bairro"
+            fieldName="neighborhood"
+            placeholder="Preenchimento automatico através do CEP"
+            [form]="customerForm"
+        />
+
+        <app-generic-input
+            label="Cidade"
+            fieldName="city"
+            placeholder="Preenchimento automatico através do CEP"
+            [form]="customerForm"
+        />
+
+        <div class="d-flex justify-content-end">
+            <button class="btn btn-success" type="submit" >Salvar</button>
+        </div>
+    </form>
+</div>

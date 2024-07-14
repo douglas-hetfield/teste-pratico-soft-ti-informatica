@@ -1,26 +1,17 @@
-import { Component, TemplateRef } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { NgbModal, NgbPaginationModule, NgbPopoverModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
-import { RouterModule } from '@angular/router';
+import { Component } from '@angular/core';
+import Swal from 'sweetalert2';
+
 import { IndexedDbService } from '@services/indexed-db.service';
 import { Customer } from 'app/_interfaces/customer';
-import Swal from 'sweetalert2';
-import { TypePerson } from 'app/_enums/type-person';
-import { NgxMaskPipe } from 'ngx-mask';
+import { CustomersTableComponent } from '@components/customers-table/customers-table.component';
+import { RouterModule } from '@angular/router';
 
 @Component({
 	selector: 'app-customer-list',
 	standalone: true,
 	imports: [
-		DecimalPipe,
-		FormsModule,
-		NgbTypeaheadModule,
-		NgbPaginationModule,
 		RouterModule,
-		CommonModule,
-		NgbPopoverModule,
-		NgxMaskPipe
+		CustomersTableComponent
 	],
 	templateUrl: './customer-list.component.html',
 	styleUrl: './customer-list.component.css'
@@ -29,12 +20,10 @@ export class CustomerListComponent {
 	page: number = 1;
 	pageSize: number = 10;
 	customersLength: number = 0;
-	customers: Customer[] | any;
-	selectedCustomer: Customer | any;
+	customers: Customer[] | any = [];
 
 	constructor(
-		private indexedDbService: IndexedDbService,
-		private modalService: NgbModal
+		private indexedDbService: IndexedDbService
 	) {
 		this.getAllCustomers();
 	}
@@ -60,12 +49,28 @@ export class CustomerListComponent {
 		})
 	}
 
+	changePageSize(pageSize: number){
+		this.pageSize = pageSize;
+		this.getAllCustomers();
+	}
+
+	changePage(page: number){
+		this.page = page;
+		this.getAllCustomers();
+	}
+
 	deleteCustomer(customer: Customer): void{
 		this.askToContinueDeleteCustomer().then((response: {isConfirmed:boolean}) => {
 			if(!customer.id || !response.isConfirmed) return ;
 			
 			this.indexedDbService.delete(customer.id).then(() => {
 				this.customers = this.customers.filter((data: Customer) => data.id != customer.id);
+
+				Swal.fire({
+					title: "Perfeito!",
+					text: "Cliente excluído com sucesso!",
+					icon: "success"
+				});
 			}).catch(() => {
 				Swal.fire({
 					title: "Erro Interno",
@@ -74,11 +79,6 @@ export class CustomerListComponent {
 				});
 			})
 		})
-	}
-
-	openModalInformation(content: TemplateRef<any>, customer: Customer): void{
-		this.selectedCustomer = customer;
-		this.modalService.open(content, { centered: true });
 	}
 
 	askToContinueDeleteCustomer(): Promise<{isConfirmed:boolean}>{
@@ -95,9 +95,5 @@ export class CustomerListComponent {
 				return resolve(result)
 			});
 		})
-	}
-
-	getTypePersonEnum(): typeof TypePerson {
-		return TypePerson;
 	}
 }

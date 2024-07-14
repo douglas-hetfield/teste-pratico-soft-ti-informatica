@@ -1,0 +1,63 @@
+<div *ngIf="customers">
+    <div *ngIf="customers.length > 0" class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th scope="col">Código</th>
+                    <th scope="col">Tipo cliente</th>
+                    <th scope="col">Nome / Nome Fantasia</th>
+                    <th scope="col">Endereço</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider">
+                <tr *ngFor="let customer of customers">
+                    <th scope="row">{{ customer.id }}</th>
+                    <td>
+                        {{ customer.typePerson === getTypePersonEnum().Fisica ? 'PF' : 'PJ' }}
+                    </td>
+                    <td>{{ customer.name }}</td>
+                    <td>{{ customer.address.logradouro }}, {{ customer.address.bairro }} - {{ customer.address.localidade }}</td>
+                    <td>{{ customer.email }}</td>
+                    <td class="fs-5">
+                        <div class="d-flex justify-content-around">
+                            <i class="bi bi-trash-fill text-danger cursor-pointer"
+                                [ngbPopover]="'Excluir cliente: ' + customer.name "
+                                triggers="mouseenter:mouseleave"
+                                (click)="deleteCustomer.emit(customer)"
+                            ></i>
+    
+                            <i class="bi bi-info-square-fill text-primary cursor-pointer"
+                                [ngbPopover]="'Ver mais sobre: ' + customer.name "
+                                triggers="mouseenter:mouseleave"
+                                (click)="openModalInformation(customer)"
+                            ></i>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div *ngIf="customers.length > 0" class="d-flex justify-content-between p-2">
+        <ngb-pagination
+            [collectionSize]="customersLength"
+            [(page)]="page"
+            [pageSize]="pageSize"
+            (pageChange)="changePage.emit(page)"
+        >
+        </ngb-pagination>
+    
+        <select class="form-select" style="width: auto" [(ngModel)]="pageSize" (ngModelChange)="changePageSize.emit(pageSize)">
+            <option [ngValue]="5">5 items por página</option>
+            <option [ngValue]="10">10 items por página</option>
+            <option [ngValue]="15">15 items por página</option>
+        </select>
+    </div>
+    
+    <div *ngIf="customers.length <= 0" class="d-flex justify-content-center align-items-center flex-column" id="customers-not-found">
+        <i id="customers-not-found-icone" class="bi bi-info-circle"></i>
+        <span class="fw-bold">Nenhum cliente encontrado!</span>
+    </div>
+</div>

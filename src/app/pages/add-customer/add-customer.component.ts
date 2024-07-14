@@ -2,7 +2,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'; 
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
 
 import Swal from 'sweetalert2';
@@ -14,16 +14,19 @@ import { IndexedDbService } from '@services/indexed-db.service';
 import { Customer } from 'app/_interfaces/customer';
 import { cpfValidator } from 'app/_utils/cpfValidator';
 import { cnpjValidator } from 'app/_utils/cnpjValidator';
+import { GenericInputComponent } from '@components/generic-input/generic-input.component';
 
 @Component({
   selector: 'app-add-customer',
   standalone: true,
   imports: [
+		RouterModule,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     NgxMaskDirective,
-    NgxMaskPipe
+    NgxMaskPipe,
+    GenericInputComponent
   ],
   templateUrl: './add-customer.component.html',
   styleUrl: './add-customer.component.css'
@@ -33,8 +36,8 @@ export class AddCustomerComponent {
   optionsTypePerson = Object.values(TypePerson);
   typePerson: TypePerson = TypePerson.Fisica;
 
-  @ViewChild('phone', { static: false }) phoneInput!: ElementRef;
-  @ViewChild('zipcode', { static: false }) zipcodeInput!: ElementRef;
+  @ViewChild('phone', { static: false }) phoneInput!: GenericInputComponent;
+  @ViewChild('zipcode', { static: false }) zipcodeInput!: GenericInputComponent;
 
   constructor(
     private customerService: CustomerService,
@@ -100,6 +103,18 @@ export class AddCustomerComponent {
     this.typePerson = (event.target as HTMLSelectElement).value as TypePerson;
   }
 
+  enableFields(fields: string[]): void {
+    fields.forEach(field => this.customerForm.get(field)?.enable());
+  }
+
+  disableFields(fields: string[]): void {
+    fields.forEach(field => this.customerForm.get(field)?.disable());
+  }
+
+  getTypePersonEnum(): typeof TypePerson {
+    return TypePerson;
+  }
+
   async onZipcodeChange(): Promise<void>{
     const zipcode = this.customerForm.get('zipcode')?.value;
     if(zipcode.length < 8){
@@ -115,7 +130,7 @@ export class AddCustomerComponent {
           this.customerForm.patchValue({
             zipcode: ''
           });
-          this.zipcodeInput.nativeElement.focus();
+          this.zipcodeInput.focusInput()
         });
 
         return;
@@ -129,23 +144,11 @@ export class AddCustomerComponent {
       });
 
       this.disableFields(['address', 'neighborhood', 'city'])
-      this.phoneInput.nativeElement.focus();
+      this.phoneInput.focusInput()
     });
   }
 
-  disableFields(fields: string[]): void {
-    fields.forEach(field => this.customerForm.get(field)?.disable());
-  }
-
-  enableFields(fields: string[]): void {
-    fields.forEach(field => this.customerForm.get(field)?.enable());
-  }
-
-  getTypePersonEnum(): typeof TypePerson {
-    return TypePerson;
-  }
-
-  saveCustomer(): void{
+  validateCustomer(): boolean {
     //check the type of person and disable fields that will not be necessary for validation
     if(this.typePerson === TypePerson.Fisica){
       this.disableFields(['fantasyName', 'cnpj']);
@@ -163,13 +166,17 @@ export class AddCustomerComponent {
       });
 
       this.enableFields(['name', 'cpf', 'fantasyName', 'cnpj']);
-      return;
+      return false;
     }
     
     this.enableFields(['address', 'neighborhood', 'city', 'name', 'cpf', 'fantasyName', 'cnpj'])
+    return true;
+  }
+
+  saveCustomer(): void{
+    if(!this.validateCustomer()) return
     
     const dataForm = this.customerForm.value;
-    
     const data: Customer = {
       typePerson: this.typePerson,
       cpf_cnpj: this.typePerson === TypePerson.Fisica ? dataForm.cpf : dataForm.cnpj,
@@ -216,7 +223,6 @@ export class AddCustomerComponent {
             icon: "error"
           });
         })
-        
       }
     })
   }
