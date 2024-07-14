@@ -14,7 +14,10 @@
             <tbody class="table-group-divider">
                 <tr *ngFor="let customer of customers">
                     <th scope="row">{{ customer.id }}</th>
-                    <td>
+                    <td [ngClass]="{
+                        'text-primary': customer.typePerson === getTypePersonEnum().Fisica,
+                        'text-success' : customer.typePerson === getTypePersonEnum().Juridica 
+                    }">
                         {{ customer.typePerson === getTypePersonEnum().Fisica ? 'PF' : 'PJ' }}
                     </td>
                     <td>{{ customer.name }}</td>
