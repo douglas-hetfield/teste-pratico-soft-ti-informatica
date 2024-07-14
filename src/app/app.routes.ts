@@ -10,5 +10,9 @@ export const routes: Routes = [
     {
         path: 'addCustomer',
         component: AddCustomerComponent
+    },
+    {
+        path: '**',
+        redirectTo: ''
     }
 ];
